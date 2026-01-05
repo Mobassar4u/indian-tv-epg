@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<channels>
+  <channel site="dishtv.in" xmltv_id="StarPlus.in" site_id="1001">Star Plus</channel>
+  <!-- Add more: e.g., <channel site="example.in" xmltv_id="ZeeTV.in" site_id="ts840">Zee TV</channel> -->
+</channels>
