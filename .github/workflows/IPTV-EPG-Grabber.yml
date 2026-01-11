@@ -27,6 +27,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add in-tv-epg.xml.gz
           if ! git diff --staged --quiet; then
-            git commit -m "Update EPG $(date +'%Y-%m-%d')"
+            git commit -m "Updated EPG $(date +'%Y-%m-%d')"
             git push
           fi
