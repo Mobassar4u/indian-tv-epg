@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<channels>
-  <channel site="dishtv.in" xmltv_id="StarPlus.in" site_id="1001">Star Plus HD</channel>
-  <channel site="tataplay.com" xmltv_id="ZeeTV.in" site_id="ts840">Zee TV HD</channel>
-  <channel site="jiotv.com" xmltv_id="ColorsHD.in" site_id="144">Colors HD</channel>
-  <!-- Add more Indian channels -->
-</channels>
