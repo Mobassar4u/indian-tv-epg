@@ -1,0 +1,25 @@
+name: Indian EPG Grabber
+on:
+  schedule:
+    - cron: '0 */4 * * *' # Grabs data every 4 hours
+  workflow_dispatch: # Allows you to grab manually
+
+jobs:
+  grab-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Fetch Latest Indian EPG and Channels
+        run: |
+          # Download Indian EPG (Schedules)
+          curl -L "https://iptv-org.github.io/epg/guides/in/tata-play.xml" -o public/epg.xml
+          # Download Indian Channel List (Logos & IDs)
+          curl -L "https://iptv-org.github.io/iptv/countries/in.m3u" -o public/channels.m3u
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: public
+          branch: gh-pages
