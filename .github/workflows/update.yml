@@ -1,37 +1,25 @@
-name: Generate 7-Day Catchup EPG
+name: Update Indian EPG
 on:
   schedule:
-    - cron: '30 1 * * *' # Runs daily at 7:00 AM IST
+    - cron: '0 1 * * *' # Runs at 6:30 AM IST
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Important for pushing files
+      contents: write
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-
-      - name: Install Dependencies
-        run: pip install requests
-
-      - name: Run EPG Script
-        run: python generate_epg.py
-
-      - name: Compress and Deploy
+      - run: pip install requests
+      - run: python generate_epg.py
+      - name: Push to Repo
         run: |
-          # Create compressed version for players
-          gzip -c epg.xml > epg.xml.gz
-          
-          # Git Push
           git config --global user.name "EPG-Bot"
           git config --global user.email "bot@github.com"
           git add epg.xml epg.xml.gz
-          git commit -m "Update EPG with 7-day catchup: $(date)" || exit 0
+          git commit -m "Updated EPG: $(date)" || exit 0
           git push
