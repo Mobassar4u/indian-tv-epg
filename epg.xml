@@ -12,4 +12,7 @@
   <channel id="StarSports1.in">
     <display-name>Star Sports 1</display-name>
   </channel>
+  <channel id="SunTV.in">
+    <display-name>Sun TV</display-name>
+  </channel>
 </tv>
