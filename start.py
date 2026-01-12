@@ -3,36 +3,51 @@ import json
 import datetime
 import os
 
-# Configuration for past/future days
-prevEpgDayCount = 2
-nextEpgDayCount = 2
-
-# Headers to bypass API blocking
-headers = {
+# 2026 Updated Headers
+HEADERS = {
     "User-Agent": "JioTV 7.0.5 (Android 10)",
     "appkey": "NzNiMDhlYzQyNjJm",
-    "os": "android",
     "devicetype": "phone",
-    "versionCode": "300"
+    "os": "android",
+    "versionCode": "300",
+    "Accept": "application/json"
 }
 
-def getChannels():
-    url = "https://jiotv.data.cdn.jio.com/apis/v1.4/getMobileChannelList/get/?os=android&devicetype=phone"
+def get_channels():
+    # Primary 2026 endpoint for channel lists
+    url = "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone&version=300"
     try:
-        res = requests.get(url, headers=headers, timeout=15)
-        return res.json().get("result", []) if res.status_code == 200 else []
-    except: return []
+        response = requests.get(url, headers=HEADERS, timeout=15)
+        if response.status_code == 200:
+            return response.json().get("result", [])
+    except Exception as e:
+        print(f"Error fetching channels: {e}")
+    return []
 
-def writeEpgChannel(id, name, icon, fp):
-    name = str(name).replace("&", "&amp;").replace("<", "&lt;")
-    fp.write(f'\t<channel id="{id}">\n\t\t<display-name>{name}</display-name>\n')
-    fp.write(f'\t\t<icon src="{icon}"></icon>\n\t</channel>\n')
+def generate_xmltv():
+    channels = get_channels()
+    if not channels:
+        print("Failed to fetch channels. API may be blocked or changed.")
+        return
 
-# Main execution loop
-channels = getChannels()
-if channels:
-    with open("channels.xml", "w", encoding='utf-8') as cf:
+    with open("epg.xml", "w", encoding="utf-8") as f:
+        f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write('<!DOCTYPE tv SYSTEM "xmltv.dtd">\n')
+        f.write('<tv generator-info-name="Indian-EPG-Grabber">\n')
+        
+        # Write Channel Data
         for c in channels:
-            writeEpgChannel(c["channel_id"], c["channel_name"], c["logoUrl"], cf)
-    # Note: Further logic for individual program files would follow here
-    print("Action complete")
+            cid = c.get("channel_id")
+            name = c.get("channel_name", "Unknown").replace("&", "&amp;")
+            logo = c.get("logoUrl", "")
+            f.write(f'  <channel id="{cid}">\n')
+            f.write(f'    <display-name>{name}</display-name>\n')
+            f.write(f'    <icon src="{logo}" />\n')
+            f.write(f'  </channel>\n')
+        
+        # Note: In a full version, you would loop getEpg() here for each channel ID
+        f.write('</tv>')
+    print("epg.xml generated successfully.")
+
+if __name__ == "__main__":
+    generate_xmltv()
