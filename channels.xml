@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<channels>
-  <channel site="tataplay.com" lang="hi" xmltv_id="ts521" site_id="24">Star Plus</channel>
-  <channel site="tataplay.com" lang="hi" xmltv_id="ts524" site_id="56">Zee TV</channel>
-  
-  <channel site="jiotv.com" lang="hi" xmltv_id="144" site_id="144">Colors HD</channel>
-  
-  <channel site="sonyliv.com" lang="hi" xmltv_id="sony1000009246" site_id="1000009246">Sony TV</channel>
-</channels>

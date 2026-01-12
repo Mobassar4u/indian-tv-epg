@@ -1,0 +1,31 @@
+name: Manual EPG Generator
+on:
+  schedule:
+    - cron: '0 2 * * *' # Runs at 7:30 AM IST daily
+  workflow_dispatch:
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Requests
+        run: pip install requests
+
+      - name: Run Generator
+        run: python generate_epg.py
+
+      - name: Upload and Push
+        run: |
+          git config --global user.name "EPG-Bot"
+          git config --global user.email "bot@github.com"
+          git add epg.xml
+          git commit -m "Updated EPG: $(date)" || exit 0
+          git push
