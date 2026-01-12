@@ -15,7 +15,7 @@ channelList = []
 
 def getChannels():
     print("Fetching Channel List...")
-    reqUrl = "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
+    reqUrl = "https://jiotv.data.cdn.jio.com/apis/v1.4/getMobileChannelList/get/?os=android&devicetype=phone"
     try:
         response = requests.get(reqUrl, headers=headers, timeout=10)
         if response.status_code == 200:
