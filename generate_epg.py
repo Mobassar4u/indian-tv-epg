@@ -1,85 +1,77 @@
 import requests
-import datetime
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import time
 import gzip
-import os
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# 1. BROWSER HEADERS
+# 1. UPDATED STABLE ENDPOINTS
+# Switched from tm-api (unresolvable) to www (stable)
+BASE_URL = "https://ts-api.videoready.tv/content-detail/pub/api/v1"
+CHANNELS_URL = f"{BASE_URL}/channels?limit=1000"
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-    'Referer': 'https://www.tataplay.com/web-guide',
-    'Accept': 'application/json, text/plain, */*'
+    'Referer': 'https://ts-api.videoready.tv',
+    'Accept': 'application/json'
 }
 
-def format_xml_time(ts):
-    dt = datetime.datetime.fromtimestamp(int(ts)/1000)
-    return dt.strftime("%Y%m%d%H%M%S +0530")
+def get_secure_session():
+    session = requests.Session()
+    # Retry mechanism for stability
+    retry = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
+    return session
 
-def load_channels_from_xml(filename):
-    channels = []
+def fetch_channels():
+    session = get_secure_session()
+    print("Connecting to Tata Play Web Guide...")
+    
     try:
-        tree = ET.parse(filename)
-        root = tree.getroot()
-        for channel in root.findall('channel'):
-            channels.append({
-                "id": channel.get('site_id'),
-                "name": channel.text.strip(),
-                "xmlid": channel.get('xmltv_id')
-            })
-    except Exception as e:
-        print(f"Error reading {filename}: {e}")
-    return channels
+        response = session.get(CHANNELS_URL, headers=HEADERS, timeout=20)
+        response.raise_for_status()
+        data = response.json()
+        
+        channels_list = data.get('data', {}).get('list', [])
+        if not channels_list:
+            print("No channels found.")
+            return
 
-def fetch_epg():
-    channels = load_channels_from_xml("indian_channels.xml")
-    if not channels:
-        print("No channels found to process.")
-        return
+        root = ET.Element("channels")
 
-    root = ET.Element("tv", {"generator-info-name": "Indian-EPG-Generator"})
-    
-    # Add Channel Headers
-    for ch in channels:
-        c_tag = ET.SubElement(root, "channel", id=ch['xmlid'])
-        ET.SubElement(c_tag, "display-name").text = ch['name']
-
-    # 7-Day Catchup Loop
-    for day_offset in range(-7, 1):
-        target_date = (datetime.datetime.now() + datetime.timedelta(days=day_offset)).strftime("%d-%m-%Y")
-        print(f"--- Processing {target_date} ---")
-
-        for ch in channels:
-            url = f"https://www.tataplay.com/web-guide/api/v1/channels/{ch['id']}/schedule?date={target_date}"
+        for ch in channels_list:
+            s_id = str(ch.get('channelId') or ch.get('id', ''))
+            ch_name = ch.get('channelName') or ch.get('name') or f"Channel_{s_id}"
             
-            try:
-                response = requests.get(url, headers=HEADERS, timeout=15)
-                if response.status_code == 200:
-                    data = response.json()
-                    programs = data.get('data', {}).get('schedules', [])
-                    for prog in programs:
-                        p_tag = ET.SubElement(root, "programme", 
-                                             start=format_xml_time(prog['startTime']), 
-                                             stop=format_xml_time(prog['endTime']), 
-                                             channel=ch['xmlid'])
-                        ET.SubElement(p_tag, "title", lang="hi").text = prog.get('title', 'Unknown')
-                        ET.SubElement(p_tag, "desc", lang="hi").text = prog.get('description', 'No info')
-                else:
-                    print(f"Skipping {ch['name']} (ID: {ch['id']}): HTTP {response.status_code}")
-                time.sleep(0.5) 
-            except Exception as e:
-                print(f"Failed {ch['name']}: {e}")
+            # Correct Logo reconstruction
+            logo_url = ch.get('logo') or ch.get('channelLogoUrl') or ""
+            if not logo_url.startswith('http') and s_id:
+                logo_url = f"https://pwa-api.tataplay.com/content/detail/{s_id}/logo.png"
 
-    # Save XML
-    xml_str = minidom.parseString(ET.tostring(root)).toprettyxml(indent="  ")
-    with open("epg.xml", "w", encoding="utf-8") as f:
-        f.write(xml_str)
-    
-    # Compress
-    with open("epg.xml", "rb") as f_in, gzip.open("epg.xml.gz", "wb") as f_out:
-        f_out.writelines(f_in)
-    print("Success: epg.xml.gz generated.")
+            # Create node
+            channel_node = ET.SubElement(root, "channel", {
+                "site": "tataplay.com",
+                "xmltv_id": f"ts{s_id}",
+                "site_id": s_id,
+                "logo": logo_url
+            })
+            channel_node.text = ch_name
+
+        # Save and Pretty Print
+        xml_bytes = ET.tostring(root, encoding='utf-8')
+        xml_str = xml_bytes.decode('utf-8')
+        pretty_xml = minidom.parseString(xml_str).toprettyxml(indent="  ")
+
+        with open("indian_channels.xml", "w", encoding="utf-8") as f:
+            f.write(pretty_xml)
+            
+        print(f"Success! Generated indian_channels.xml with {len(channels_list)} channels.")
+
+    except Exception as e:
+        print(f"Connection Failed: {e}")
+        print("Tip: Check your internet connection or try using a VPN if the domain is blocked in your region.")
 
 if __name__ == "__main__":
-    fetch_epg()
+    fetch_channels()
