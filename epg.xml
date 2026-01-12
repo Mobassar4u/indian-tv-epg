@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<tv>
+  <channel id="StarPlus.in">
+    <display-name>Star Plus</display-name>
+  </channel>
+  <channel id="ZeeTV.in">
+    <display-name>Zee TV</display-name>
+  </channel>
+  <channel id="SonySET.in">
+    <display-name>Sony SET</display-name>
+  </channel>
+  <channel id="StarSports1.in">
+    <display-name>Star Sports 1</display-name>
+  </channel>
+  <channel id="AajTak.in">
+    <display-name>Aaj Tak</display-name>
+  </channel>
+</tv>
