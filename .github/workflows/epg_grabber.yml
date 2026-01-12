@@ -3,7 +3,7 @@ name: Update EPG Data
 on:
   schedule:
     # Runs at 00:00 UTC every day (approx 5:30 AM IST)
-    - cron: '0 0 * * *'
+    # - cron: '0 0 * * *'
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 jobs:
