@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<tv>
+  <channel id="starplus">
+    <display-name>Star Plus</display-name>
+    <icon src="https://upload.wikimedia.org/wikipedia/en/4/4f/Star_Plus_Logo.png"/>
+  </channel>
+  <channel id="colors">
+    <display-name>Colors TV</display-name>
+    <icon src="https://upload.wikimedia.org/wikipedia/en/2/2f/Colors_TV_logo.png"/>
+  </channel>
+</tv>
