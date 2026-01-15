@@ -41,5 +41,4 @@ jobs:
             echo "No changes detected in EPG."
           else
             git commit -m "Auto-update EPG: $(date +'%Y-%m-%d')"
-            git push
-          fi
+            git push        
