@@ -1,59 +1,46 @@
-name: Update Filtered EPG Daily
+name: Update EPG
 
 on:
   schedule:
-    # Morning – 10:00 AM IST (04:30 UTC)
-    # - cron: "30 4 * * *"
+  #  - cron: "0 0,12 * * *"
+  workflow_dispatch:
 
-    # Evening – 6:00 PM IST (12:30 UTC)
-    # - cron: "30 12 * * *"
-
-    # Evening – 9:00 PM IST (15:30 UTC)
-    # - cron: "30 15 * * *"
-
-  workflow_dispatch: # Allows manual triggering
+permissions:
+  contents: write
 
 jobs:
-  update-epg:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.9"
 
-      - name: Download latest EPG source
+      - name: Install Dependencies
         run: |
-          echo "Downloading EPG source..."
-          curl -L --fail -A "Mozilla/5.0" \
-            -o epg_ripper_ALL_SOURCES1.gz \
-            "https://epgshare01.online/epgshare01/epg_ripper_ALL_SOURCES1.xml.gz"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-          echo "Downloaded file info:"
-          ls -lh epg_ripper_ALL_SOURCES1.gz
-          file epg_ripper_ALL_SOURCES1.gz
+      - name: Generate EPG
+        run: |
+          python generate_epg.py
 
-          if file epg_ripper_ALL_SOURCES1.gz | grep -qi html; then
-            echo "ERROR: Downloaded HTML instead of .gz"
-            exit 1
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add epg.xml.gz
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
           fi
-
-      - name: Run filter script
-        run: |
-          python filter_epg.py
-
-      - name: Commit & Push updated EPG
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-
-          git add filtered_epg.xml filtered_epg.xml.gz || true
-          git diff --cached --quiet && exit 0
-
-          git commit -m "Auto update filtered EPG"
+          git commit -m "Auto-update EPG [skip ci]"
+          # PULL LATEST CHANGES BEFORE PUSHING
+          git pull --rebase origin main
           git push
