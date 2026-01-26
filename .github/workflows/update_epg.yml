@@ -3,13 +3,13 @@ name: Update Filtered EPG Daily
 on:
   schedule:
     # Morning – 10:00 AM IST (04:30 UTC)
-    - cron: "30 4 * * *"
+    # - cron: "30 4 * * *"
 
     # Evening – 6:00 PM IST (12:30 UTC)
-    - cron: "30 12 * * *"
+    # - cron: "30 12 * * *"
 
     # Evening – 9:00 PM IST (15:30 UTC)
-    - cron: "30 15 * * *"
+    # - cron: "30 15 * * *"
 
   workflow_dispatch:
 
