@@ -1,8 +1,8 @@
-name: Update EPG
+name: Generate JStar EPG
 
 on:
   schedule:
-# - cron: '0 0 * * *' # Runs daily at midnight
+    - cron: '0 0 * * *' # Runs daily at midnight
   push:
     branches:
       - main
